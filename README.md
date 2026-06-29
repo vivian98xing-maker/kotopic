@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kotopic ことぴく
+
+A web application that helps Japanese language learners by allowing them to upload images, identify items in the images, learn their Japanese translations, and practice with conversational sentences.
+
+## Features
+
+- Image upload functionality
+- AI-powered item identification using OpenAI Vision
+- Japanese word translations (romaji and kanji/hiragana)
+- Generation of relevant conversational sentences
 
 ## Getting Started
 
-First, run the development server:
+First, obtain an API key from [QWen (Alibaba Cloud)](https://dashscope.aliyuncs.com/).
+
+Create a local environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Then replace `QWEN_API_KEY` in `.env.local` with your real key.
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Upload an image and click "Analyze Image" to get results.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Open From Other Devices Nearby
 
-## Learn More
+To test from a phone, tablet, or another computer on the same Wi-Fi network:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev:network
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Find this computer's local IP address, then open this address on the other device:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```txt
+http://YOUR_LOCAL_IP:3000
+```
 
-## Deploy on Vercel
+For example, if your local IP is `192.168.1.25`, open `http://192.168.1.25:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Publish Online
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This app needs a Node.js-capable host because `/app/api/analyze/route.ts` calls the QWen API from the server. Static-only hosting is not enough for the image analysis feature.
+
+Recommended hosting options:
+
+- Vercel, simplest for a Next.js app
+- Render, Railway, Fly.io, or another Node.js host
+- Your own server running `npm run build` and `npm run start`
+
+When deploying, add these environment variables in the host's dashboard:
+
+```txt
+QWEN_API_KEY=your-real-secret-key
+QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+QWEN_MODEL=qwen-vl-max
+```
+
+Do not commit `.env.local`; it is already ignored by Git.
+
+For a normal Node.js deployment, the production commands are:
+
+```bash
+npm install
+npm run build
+npm run start
+```
+
+## Tech Stack
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- QWen API (Alibaba Cloud)
