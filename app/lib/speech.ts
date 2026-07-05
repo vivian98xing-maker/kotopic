@@ -32,7 +32,7 @@ export function speakJapaneseText(text: string, { rate = 0.9, speaker }: SpeakOp
   return true
 }
 
-type SequenceItem = { text: string; speaker?: string }
+type SequenceItem = { text: string; speaker?: string; onStart?: () => void }
 
 export function speakSequence(
   items: SequenceItem[],
@@ -51,7 +51,8 @@ export function speakSequence(
       return
     }
 
-    const { text, speaker } = items[index]
+    const { text, speaker, onStart } = items[index]
+    onStart?.()
     const isSpeakerB = speaker?.trim().toUpperCase() === 'B'
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = 'ja-JP'

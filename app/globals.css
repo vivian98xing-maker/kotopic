@@ -900,6 +900,13 @@ rt {
   background: rgba(234, 194, 200, 0.32);
 }
 
+.dialogue-line.dialogue-line-playing {
+  outline: 2px solid var(--blue);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 4px rgba(53, 105, 151, 0.12);
+  transition: outline 0.15s ease, box-shadow 0.15s ease;
+}
+
 .speaker-badge {
   display: inline-grid;
   width: 38px;
@@ -968,19 +975,44 @@ rt {
   height: 17px;
 }
 
-.loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(53, 105, 151, 0.24);
-  border-top-color: var(--blue);
-  border-radius: 50%;
-  animation: status-spin 750ms linear infinite;
+.progress-ring-wrap {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@keyframes status-spin {
-  to {
-    transform: rotate(360deg);
-  }
+.progress-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-track {
+  fill: none;
+  stroke: rgba(53, 105, 151, 0.15);
+  stroke-width: 3;
+}
+
+.progress-ring-fill {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.35s ease;
+}
+
+.progress-ring-pct {
+  position: relative;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--blue);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 /* ─── Lesson progress bar ─────────────────────────────────────── */
@@ -1690,13 +1722,13 @@ rt {
   justify-content: center;
   align-items: center;
   gap: 5px;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 7px;
-  background: var(--panel-strong);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
   cursor: pointer;
   margin-left: auto;
 }

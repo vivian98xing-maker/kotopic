@@ -5,7 +5,7 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd'
 import '@tensorflow/tfjs'
 import { Icon } from './components/Icon'
 import { JapaneseWord } from './components/JapaneseWord'
-import { speakJapaneseText } from './lib/speech'
+import { speakJapaneseText, speakSequence } from './lib/speech'
 import { saveConversationExchanges, saveLessonHistory, saveVocabularyItems, type ConversationExchange, type Lesson, type VocabularyItem } from './lib/studyStore'
 import { recordLesson } from './lib/progressStore'
 
@@ -103,6 +103,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const loadingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [isPlayingAll, setIsPlayingAll] = useState(false)
+  const [playingLineKey, setPlayingLineKey] = useState('')
+  const cancelPlayAllRef = useRef<(() => void) | null>(null)
   const [error, setError] = useState('')
   const [saveMessage, setSaveMessage] = useState('')
   const [conversationSaveMessage, setConversationSaveMessage] = useState('')
@@ -292,6 +295,31 @@ export default function Home() {
     if (!speakJapaneseText(text, { rate, speaker })) {
       setError('Speech playback is not available in this browser.')
     }
+  }
+
+  const handlePlayAll = () => {
+    if (!displayedLesson) return
+    const lines = displayedLesson.exchanges.flatMap(ex =>
+      ex.lines.map(line => ({ text: line.japanese, speaker: line.speaker, key: `${line.speaker}-${line.japanese}` }))
+    )
+    if (lines.length === 0) return
+    setIsPlayingAll(true)
+    const items = lines.map(line => ({
+      text: line.text,
+      speaker: line.speaker,
+      onStart: () => setPlayingLineKey(line.key),
+    }))
+    const cancel = speakSequence(items, {
+      onDone: () => { setIsPlayingAll(false); setPlayingLineKey('') },
+    })
+    cancelPlayAllRef.current = cancel
+  }
+
+  const handleStopAll = () => {
+    cancelPlayAllRef.current?.()
+    cancelPlayAllRef.current = null
+    setIsPlayingAll(false)
+    setPlayingLineKey('')
   }
 
   const handleSubmit = async () => {
@@ -807,7 +835,19 @@ export default function Home() {
                     role="status"
                     title={conversationStatusText}
                   >
-                    {loading ? <span className="loading-spinner" /> : <Icon name="check" />}
+                    {loading ? (
+                      <span className="progress-ring-wrap">
+                        <svg className="progress-ring" viewBox="0 0 36 36" aria-hidden="true">
+                          <circle className="progress-ring-track" cx="18" cy="18" r="15" />
+                          <circle
+                            className="progress-ring-fill"
+                            cx="18" cy="18" r="15"
+                            strokeDasharray={`${(loadingProgress / 100) * 94.25} 94.25`}
+                          />
+                        </svg>
+                        <span className="progress-ring-pct">{loadingProgress}</span>
+                      </span>
+                    ) : <Icon name="check" />}
                   </span>
                 )}
                 <div className="difficulty-control" aria-label="Conversation difficulty">
@@ -823,6 +863,21 @@ export default function Home() {
                     </button>
                   ))}
                 </div>
+                {isPlayingAll ? (
+                  <button className="secondary-button" type="button" onClick={handleStopAll}>
+                    <span className="button-content">
+                      <Icon name="stop" />
+                      Stop
+                    </span>
+                  </button>
+                ) : (
+                  <button className="secondary-button" type="button" disabled={!lesson || loading} onClick={handlePlayAll}>
+                    <span className="button-content">
+                      <Icon name="play" />
+                      Play all
+                    </span>
+                  </button>
+                )}
                 <button className="secondary-button" type="button" disabled={!lesson} onClick={handleSaveConversations}>
                   <span className="button-content">
                     <Icon name="save" />
@@ -845,9 +900,11 @@ export default function Home() {
                         <h4>{exchange.title}</h4>
                         <p>{exchange.context}</p>
                       </div>
-                      {exchange.lines.map((line, index) => (
+                      {exchange.lines.map((line, index) => {
+                        const lineKey = `${line.speaker}-${line.japanese}`
+                        return (
                         <div
-                          className={`dialogue-line speaker-${line.speaker.toLowerCase() === 'b' ? 'b' : 'a'}`}
+                          className={`dialogue-line speaker-${line.speaker.toLowerCase() === 'b' ? 'b' : 'a'}${playingLineKey === lineKey ? ' dialogue-line-playing' : ''}`}
                           key={`${line.speaker}-${line.japanese}-${index}`}
                         >
                           <span className="speaker-badge">{line.speaker}</span>
@@ -879,7 +936,8 @@ export default function Home() {
                             <p>{line.english}</p>
                           </div>
                         </div>
-                      ))}
+                        )
+                      })}
                       {exchangeVocabulary.length > 0 && (
                         <div className="exchange-vocabulary" aria-label={`Vocabulary from ${exchange.title}`}>
                           {exchangeVocabulary.map(item => (

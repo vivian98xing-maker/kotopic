@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-type IconName = 'book' | 'check' | 'image' | 'message' | 'play' | 'save' | 'scan' | 'spark' | 'speed' | 'upload'
+type IconName = 'book' | 'check' | 'image' | 'message' | 'play' | 'save' | 'scan' | 'spark' | 'speed' | 'stop' | 'upload'
 
 type IconProps = {
   name: IconName
@@ -53,6 +53,7 @@ const paths: Record<IconName, ReactNode> = {
       <path d="m18 15 .7 2.3L21 18l-2.3.7L18 21l-.7-2.3L15 18l2.3-.7z" />
     </>
   ),
+  stop: <rect x="5" y="5" width="14" height="14" rx="2" />,
   speed: (
     <>
       <path d="M12 19a7 7 0 1 0-7-7" />
