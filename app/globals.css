@@ -983,6 +983,33 @@ rt {
   }
 }
 
+/* ─── Lesson progress bar ─────────────────────────────────────── */
+
+.lesson-progress-bar-wrap {
+  width: 100%;
+  height: 4px;
+  background: var(--line);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.lesson-progress-bar {
+  height: 100%;
+  width: 40%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--blue) 0%, #7bb8e8 50%, var(--blue) 100%);
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes progress-shimmer {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(350%); }
+}
+
+/* ─── Difficulty control ──────────────────────────────────────── */
+
 .difficulty-control {
   display: inline-flex;
   gap: 4px;
@@ -1653,12 +1680,14 @@ rt {
   display: none;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 5px;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 8px;
+  border-radius: 9px;
+  padding: 7px;
   background: var(--panel-strong);
   cursor: pointer;
   margin-left: auto;
@@ -2163,13 +2192,18 @@ rt {
     position: relative;
     flex-wrap: wrap;
     align-items: center;
-    padding: 10px 14px;
+    padding: 0 16px;
     gap: 0;
+    min-height: 54px;
   }
 
   .brand-link {
     flex: 1;
-    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    line-height: 1;
+    gap: 6px;
   }
 
   .nav-links {

@@ -654,9 +654,15 @@ export default function Home() {
                 <button className="primary-button" type="button" disabled={!canAnalyze} onClick={handleSubmit}>
                   <span className="button-content">
                     <Icon name={loading ? 'spark' : 'scan'} />
-                    {loading ? 'Teaching...' : 'Generate lesson'}
+                    {loading ? 'Generating...' : 'Generate lesson'}
                   </span>
                 </button>
+
+                {loading && (
+                  <div className="lesson-progress-bar-wrap" aria-label="Loading lesson">
+                    <div className="lesson-progress-bar" />
+                  </div>
+                )}
 
                 {error && <p className="error-message">{error}</p>}
                 {saveMessage && <p className="save-message">{saveMessage}</p>}
