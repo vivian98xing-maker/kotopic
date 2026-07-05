@@ -101,6 +101,8 @@ export default function Home() {
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [, setRawText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const loadingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [error, setError] = useState('')
   const [saveMessage, setSaveMessage] = useState('')
   const [conversationSaveMessage, setConversationSaveMessage] = useState('')
@@ -302,6 +304,24 @@ export default function Home() {
     await analyzeImageLesson(imageDataUrl, items, conversationDifficulty, { clearLesson: true })
   }
 
+  const startLoadingProgress = () => {
+    setLoadingProgress(0)
+    if (loadingTimerRef.current) clearInterval(loadingTimerRef.current)
+    let current = 0
+    loadingTimerRef.current = setInterval(() => {
+      // Slow down as it approaches 85% so it never feels stuck
+      const step = current < 40 ? 3 : current < 65 ? 1.5 : current < 82 ? 0.6 : 0
+      current = Math.min(85, current + step)
+      setLoadingProgress(Math.round(current))
+    }, 300)
+  }
+
+  const finishLoadingProgress = () => {
+    if (loadingTimerRef.current) clearInterval(loadingTimerRef.current)
+    setLoadingProgress(100)
+    setTimeout(() => setLoadingProgress(0), 600)
+  }
+
   const analyzeImageLesson = async (
     imageDataUrl: string,
     items: DetectedItem[],
@@ -309,6 +329,7 @@ export default function Home() {
     options: { clearLesson: boolean },
   ) => {
     setLoading(true)
+    startLoadingProgress()
     setError('')
     setSaveMessage('')
     setConversationSaveMessage('')
@@ -355,6 +376,7 @@ export default function Home() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong while analyzing the image.')
     } finally {
+      finishLoadingProgress()
       setLoading(false)
     }
   }
@@ -659,8 +681,14 @@ export default function Home() {
                 </button>
 
                 {loading && (
-                  <div className="lesson-progress-bar-wrap" aria-label="Loading lesson">
-                    <div className="lesson-progress-bar" />
+                  <div className="lesson-progress-wrap">
+                    <div className="lesson-progress-bar-wrap" aria-label="Loading lesson">
+                      <div
+                        className="lesson-progress-bar"
+                        style={{ width: `${loadingProgress}%` }}
+                      />
+                    </div>
+                    <span className="lesson-progress-pct">{loadingProgress}%</span>
                   </div>
                 )}
 

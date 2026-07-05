@@ -985,27 +985,35 @@ rt {
 
 /* ─── Lesson progress bar ─────────────────────────────────────── */
 
+.lesson-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
 .lesson-progress-bar-wrap {
-  width: 100%;
-  height: 4px;
+  flex: 1;
+  height: 5px;
   background: var(--line);
   border-radius: 99px;
   overflow: hidden;
-  margin-top: 10px;
 }
 
 .lesson-progress-bar {
   height: 100%;
-  width: 40%;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--blue) 0%, #7bb8e8 50%, var(--blue) 100%);
-  background-size: 200% 100%;
-  animation: progress-shimmer 1.4s ease-in-out infinite;
+  background: var(--blue);
+  transition: width 0.35s ease;
 }
 
-@keyframes progress-shimmer {
-  0%   { transform: translateX(-120%); }
-  100% { transform: translateX(350%); }
+.lesson-progress-pct {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--blue);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Difficulty control ──────────────────────────────────────── */
@@ -2186,24 +2194,21 @@ rt {
   /* nav: single compact row, hamburger reveals links below */
   .nav-hamburger {
     display: flex;
+    margin: 0 auto;
+  }
+
+  .brand-link-desktop {
+    display: none;
   }
 
   .app-nav {
     position: relative;
     flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
     padding: 0 16px;
     gap: 0;
-    min-height: 54px;
-  }
-
-  .brand-link {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    font-size: 0.9rem;
-    line-height: 1;
-    gap: 6px;
+    min-height: 48px;
   }
 
   .nav-links {

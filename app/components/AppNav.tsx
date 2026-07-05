@@ -19,7 +19,7 @@ export function AppNav() {
 
   return (
     <nav className="app-nav" aria-label="Main navigation">
-      <Link className="brand-link" href="/" onClick={() => setMenuOpen(false)}>
+      <Link className="brand-link brand-link-desktop" href="/" onClick={() => setMenuOpen(false)}>
         Kotopic ことぴく
       </Link>
 
