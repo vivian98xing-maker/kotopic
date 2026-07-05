@@ -146,8 +146,8 @@ button {
 .page-header h1 {
   margin: 0;
   color: var(--ink);
-  font-size: clamp(2rem, 5vw, 4.2rem);
-  line-height: 1;
+  font-size: clamp(1.6rem, 5vw, 4.2rem);
+  line-height: 1.05;
 }
 
 .page-header p:last-child {
@@ -1283,7 +1283,7 @@ rt {
   }
 
   .intro h1 {
-    font-size: 4.8rem;
+    font-size: 3.2rem;
   }
 
   .drop-zone {
@@ -1375,7 +1375,7 @@ rt {
   }
 
   .intro h1 {
-    font-size: 3rem;
+    font-size: 2.2rem;
   }
 
   .dictionary-word {
@@ -1507,6 +1507,144 @@ rt {
     gap: 7px;
     padding-top: 12px;
   }
+
+  /* typography scale-down */
+  .japanese-word,
+  .sentence-ja {
+    font-size: 1.1rem;
+  }
+
+  .reading {
+    font-size: 0.76rem;
+  }
+
+  .practice-prompt p {
+    font-size: 2.6rem !important;
+  }
+
+  .unit-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .panel-header h2,
+  .saved-exchange-header h2,
+  .saved-vocab-card h2 {
+    font-size: 0.95rem;
+  }
+
+  .progress-stat-value {
+    font-size: 2.2rem;
+  }
+
+  .progress-alltime-value {
+    font-size: 1.7rem;
+  }
+
+  .kana-question-char {
+    font-size: clamp(3rem, 10vw, 5rem) !important;
+  }
+
+  .kana-question-romaji {
+    font-size: clamp(2.2rem, 7vw, 3.5rem) !important;
+  }
+
+  .kana-answer-char {
+    font-size: 1.8rem;
+  }
+
+  .kana-char {
+    font-size: 1.1rem;
+  }
+
+  .history-scene {
+    font-size: 0.88rem;
+  }
+
+  .mode-tab {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    min-height: 34px;
+  }
+
+  .secondary-button {
+    font-size: 0.82rem;
+  }
+}
+
+/* ─── Portrait image: numbered dot badges ─────────────────────── */
+
+.image-label-dot {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 2.5px solid #fff;
+  border-radius: 50%;
+  padding: 0;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 2px 6px rgba(36, 33, 29, 0.35);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.image-label-dot:hover {
+  background: var(--accent-dark);
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.portrait-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.portrait-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px 6px 6px;
+  color: var(--ink);
+  background: var(--panel-strong);
+  cursor: pointer;
+  font-size: 0.88rem;
+  box-shadow: var(--soft-shadow);
+}
+
+.portrait-legend-item:hover {
+  border-color: rgba(189, 47, 62, 0.35);
+  background: rgba(234, 194, 200, 0.2);
+}
+
+.portrait-legend-num {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.portrait-legend-ja {
+  font-family: var(--japanese-font);
+  font-weight: 700;
+}
+
+.portrait-legend-en {
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 /* ─── Nav hamburger ───────────────────────────────────────────── */
@@ -2013,9 +2151,10 @@ rt {
   font-weight: 800;
 }
 
-/* ─── Mobile overrides (hamburger + layout) ───────────────────── */
+/* ─── Mobile overrides ────────────────────────────────────────── */
 
 @media (max-width: 680px) {
+  /* nav: single compact row, hamburger reveals links below */
   .nav-hamburger {
     display: flex;
   }
@@ -2023,20 +2162,23 @@ rt {
   .app-nav {
     position: relative;
     flex-wrap: wrap;
-    padding: 12px 14px;
+    align-items: center;
+    padding: 10px 14px;
     gap: 0;
   }
 
   .brand-link {
     flex: 1;
+    font-size: 0.95rem;
   }
 
   .nav-links {
     display: none;
     width: 100%;
     flex-direction: column;
-    gap: 4px;
-    margin-top: 12px;
+    gap: 2px;
+    margin-top: 8px;
+    padding-bottom: 4px;
   }
 
   .nav-links.nav-links-open {
@@ -2046,11 +2188,65 @@ rt {
   .nav-link {
     justify-content: flex-start;
     width: 100%;
-    padding: 12px 14px;
-    font-size: 1rem;
-    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    min-height: 42px;
   }
 
+  /* shell: tighter outer padding */
+  .app-shell {
+    padding: 14px 14px 32px;
+  }
+
+  /* intro: compact on mobile — hide pronunciation + noun pill, shrink heading */
+  .intro {
+    gap: 4px;
+    margin-bottom: 14px;
+    padding-top: 2px;
+  }
+
+  .intro-hide-mobile {
+    display: none;
+  }
+
+  .intro h1 {
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+
+  .dictionary-word span {
+    font-size: 0.55em;
+  }
+
+  .intro p:last-child {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    margin-top: 2px;
+  }
+
+  /* page headers on inner pages */
+  .page-header {
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .page-header h1 {
+    font-size: 1.55rem;
+    line-height: 1.1;
+  }
+
+  .page-header p:last-child {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  .eyebrow,
+  .section-kicker {
+    font-size: 0.68rem;
+  }
+
+  /* misc layout */
   .vocab-filter-row {
     flex-direction: column;
     align-items: stretch;
@@ -2067,7 +2263,7 @@ rt {
 
   .history-thumbnail {
     width: 100%;
-    height: 120px;
+    height: 110px;
   }
 
   .history-card-actions {
@@ -2077,17 +2273,21 @@ rt {
   }
 
   .kana-cell {
-    width: 58px;
-    min-height: 58px;
-    padding: 8px 4px;
+    width: 56px;
+    min-height: 56px;
+    padding: 7px 4px;
   }
 
   .kana-char {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
   }
 
   .progress-stat-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .progress-stat-value {
+    font-size: 2.5rem;
   }
 
   .kana-quiz-controls {
@@ -2096,6 +2296,10 @@ rt {
 
   .practice-actions {
     flex-wrap: wrap;
+  }
+
+  .practice-prompt p {
+    font-size: 3rem !important;
   }
 
   .exchange-header-actions {

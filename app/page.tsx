@@ -113,10 +113,19 @@ export default function Home() {
   const [modelLoaded, setModelLoaded] = useState(false)
   const [objectModel, setObjectModel] = useState<cocoSsd.ObjectDetection | null>(null)
   const [studyImageColumnHeight, setStudyImageColumnHeight] = useState<number | null>(null)
+  const [isPortrait, setIsPortrait] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const previewUrlRef = useRef('')
   const studyImageColumnRef = useRef<HTMLDivElement | null>(null)
   const vocabListRef = useRef<HTMLDivElement | null>(null)
   const cameraInputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 680)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -196,6 +205,7 @@ export default function Home() {
     setActiveVocabKey('')
     setPinnedVocabKey('')
     setSelectedVocabKeys([])
+    setIsPortrait(false)
 
     fileToDataUrl(selectedImage).then(dataUrl => {
       writeImageLessonDraft({
@@ -499,8 +509,8 @@ export default function Home() {
       <section className="workspace">
         <div className="intro">
           <h1 className="dictionary-word">Kotopic <span>ことぴく</span></h1>
-          <p className="dictionary-pronunciation">/ko-to-pic/</p>
-          <p className="dictionary-part">noun</p>
+          <p className="dictionary-pronunciation intro-hide-mobile">/ko-to-pic/</p>
+          <p className="dictionary-part intro-hide-mobile">noun</p>
           <p className="dictionary-definition">Learning Japanese by connecting words to the world you see.</p>
         </div>
 
@@ -525,31 +535,58 @@ export default function Home() {
                   {previewUrl ? (
                     <span className="image-stage">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img className="image-preview" src={previewUrl} alt="Uploaded preview" />
-                      {spreadLabels.map(item => {
-                        const vocabularyItem = displayedLesson.vocabulary.find(vocab => getVocabKey(vocab) === item.vocabKey)
-                        if (!vocabularyItem) return null
-
-                        return (
-                          <button
-                            className={item.matched ? 'image-label image-label-matched' : 'image-label image-label-unmatched'}
-                            key={item.key}
-                            type="button"
-                            style={{
-                              left: `${item.left}%`,
-                              top: `${item.top}%`,
-                            }}
-                            onClick={event => {
-                              event.preventDefault()
-                              event.stopPropagation()
-                              handleLabelClick(vocabularyItem)
-                            }}
-                          >
-                            <JapaneseWord className="image-label-japanese" item={vocabularyItem} />
-                            <span className="image-label-english">{item.english}</span>
-                          </button>
-                        )
-                      })}
+                      <img
+                        className="image-preview"
+                        src={previewUrl}
+                        alt="Uploaded preview"
+                        onLoad={e => {
+                          const { naturalWidth, naturalHeight } = e.currentTarget
+                          setIsPortrait(naturalHeight > naturalWidth * 1.1)
+                          setIsMobile(window.innerWidth <= 680)
+                        }}
+                      />
+                      {(isPortrait || isMobile)
+                        ? spreadLabels.map((item, index) => {
+                            const vocabularyItem = displayedLesson.vocabulary.find(vocab => getVocabKey(vocab) === item.vocabKey)
+                            if (!vocabularyItem) return null
+                            return (
+                              <button
+                                className="image-label-dot"
+                                key={item.key}
+                                type="button"
+                                style={{ left: `${item.left}%`, top: `${item.top}%` }}
+                                onClick={event => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  handleLabelClick(vocabularyItem)
+                                }}
+                                aria-label={`${index + 1}. ${item.english}`}
+                              >
+                                {index + 1}
+                              </button>
+                            )
+                          })
+                        : spreadLabels.map(item => {
+                            const vocabularyItem = displayedLesson.vocabulary.find(vocab => getVocabKey(vocab) === item.vocabKey)
+                            if (!vocabularyItem) return null
+                            return (
+                              <button
+                                className={item.matched ? 'image-label image-label-matched' : 'image-label image-label-unmatched'}
+                                key={item.key}
+                                type="button"
+                                style={{ left: `${item.left}%`, top: `${item.top}%` }}
+                                onClick={event => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  handleLabelClick(vocabularyItem)
+                                }}
+                              >
+                                <JapaneseWord className="image-label-japanese" item={vocabularyItem} />
+                                <span className="image-label-english">{item.english}</span>
+                              </button>
+                            )
+                          })
+                      }
                     </span>
                   ) : (
                     <span className="drop-zone-placeholder">
@@ -559,6 +596,28 @@ export default function Home() {
                     </span>
                   )}
                 </label>
+                {(isPortrait || isMobile) && lesson && spreadLabels.length > 0 && (
+                  <div className="portrait-legend">
+                    {spreadLabels.map((item, index) => {
+                      const vocabularyItem = displayedLesson.vocabulary.find(vocab => getVocabKey(vocab) === item.vocabKey)
+                      if (!vocabularyItem) return null
+                      return (
+                        <button
+                          className="portrait-legend-item"
+                          key={item.key}
+                          type="button"
+                          onClick={() => handleLabelClick(vocabularyItem)}
+                        >
+                          <span className="portrait-legend-num">{index + 1}</span>
+                          <span className="portrait-legend-ja">
+                            <JapaneseWord item={vocabularyItem} />
+                          </span>
+                          <span className="portrait-legend-en">{item.english}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
                 <input
                   id="image-upload"
                   className="file-input"
