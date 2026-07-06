@@ -103,7 +103,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const loadingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const [isPlayingAll, setIsPlayingAll] = useState(false)
+  const [playingExchangeKey, setPlayingExchangeKey] = useState('')
   const [playingLineKey, setPlayingLineKey] = useState('')
   const cancelPlayAllRef = useRef<(() => void) | null>(null)
   const [error, setError] = useState('')
@@ -297,20 +297,17 @@ export default function Home() {
     }
   }
 
-  const handlePlayAll = () => {
-    if (!displayedLesson) return
-    const lines = displayedLesson.exchanges.flatMap(ex =>
-      ex.lines.map(line => ({ text: line.japanese, speaker: line.speaker, key: `${line.speaker}-${line.japanese}` }))
-    )
-    if (lines.length === 0) return
-    setIsPlayingAll(true)
-    const items = lines.map(line => ({
-      text: line.text,
+  const handlePlayExchange = (exchange: ConversationExchange) => {
+    cancelPlayAllRef.current?.()
+    const exchangeKey = `${exchange.title}-${exchange.context}`
+    setPlayingExchangeKey(exchangeKey)
+    const items = exchange.lines.map(line => ({
+      text: line.japanese,
       speaker: line.speaker,
-      onStart: () => setPlayingLineKey(line.key),
+      onStart: () => setPlayingLineKey(`${line.speaker}-${line.japanese}`),
     }))
     const cancel = speakSequence(items, {
-      onDone: () => { setIsPlayingAll(false); setPlayingLineKey('') },
+      onDone: () => { setPlayingExchangeKey(''); setPlayingLineKey('') },
     })
     cancelPlayAllRef.current = cancel
   }
@@ -318,7 +315,7 @@ export default function Home() {
   const handleStopAll = () => {
     cancelPlayAllRef.current?.()
     cancelPlayAllRef.current = null
-    setIsPlayingAll(false)
+    setPlayingExchangeKey('')
     setPlayingLineKey('')
   }
 
@@ -863,21 +860,6 @@ export default function Home() {
                     </button>
                   ))}
                 </div>
-                {isPlayingAll ? (
-                  <button className="secondary-button" type="button" onClick={handleStopAll}>
-                    <span className="button-content">
-                      <Icon name="stop" />
-                      Stop
-                    </span>
-                  </button>
-                ) : (
-                  <button className="secondary-button" type="button" disabled={!lesson || loading} onClick={handlePlayAll}>
-                    <span className="button-content">
-                      <Icon name="play" />
-                      Play all
-                    </span>
-                  </button>
-                )}
                 <button className="secondary-button" type="button" disabled={!lesson} onClick={handleSaveConversations}>
                   <span className="button-content">
                     <Icon name="save" />
@@ -894,11 +876,24 @@ export default function Home() {
                   {displayedLesson.exchanges.map(exchange => {
                     const exchangeVocabulary = getConversationVocabulary(exchange, displayedLesson.vocabulary)
 
+                    const exchangeKey = `${exchange.title}-${exchange.context}`
+                    const isThisPlaying = playingExchangeKey === exchangeKey
                     return (
-                      <article className="exchange-card" key={`${exchange.title}-${exchange.context}`}>
+                      <article className="exchange-card" key={exchangeKey}>
                       <div className="exchange-header">
-                        <h4>{exchange.title}</h4>
-                        <p>{exchange.context}</p>
+                        <div className="exchange-header-text">
+                          <h4>{exchange.title}</h4>
+                          <p>{exchange.context}</p>
+                        </div>
+                        {isThisPlaying ? (
+                          <button className="icon-button" type="button" onClick={handleStopAll} aria-label="Stop playback">
+                            <Icon name="stop" />
+                          </button>
+                        ) : (
+                          <button className="icon-button" type="button" onClick={() => handlePlayExchange(exchange)} aria-label="Play conversation">
+                            <Icon name="play" />
+                          </button>
+                        )}
                       </div>
                       {exchange.lines.map((line, index) => {
                         const lineKey = `${line.speaker}-${line.japanese}`
