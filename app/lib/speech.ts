@@ -32,6 +32,31 @@ export function speakJapaneseText(text: string, { rate = 0.9, speaker }: SpeakOp
   return true
 }
 
+export function checkJapaneseVoice(callback: (available: boolean) => void) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    callback(false)
+    return
+  }
+
+  const synthesis = window.speechSynthesis
+  const hasVoice = () => synthesis.getVoices().some(voice => voice.lang.toLowerCase().startsWith('ja'))
+
+  if (synthesis.getVoices().length > 0) {
+    callback(hasVoice())
+    return
+  }
+
+  // Voices load asynchronously on some browsers
+  let settled = false
+  const settle = () => {
+    if (settled) return
+    settled = true
+    callback(hasVoice())
+  }
+  synthesis.addEventListener('voiceschanged', settle, { once: true })
+  setTimeout(settle, 2000)
+}
+
 type SequenceItem = { text: string; speaker?: string; onStart?: () => void }
 
 export function speakSequence(

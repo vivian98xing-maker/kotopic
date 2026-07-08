@@ -5,7 +5,8 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd'
 import '@tensorflow/tfjs'
 import { Icon } from './components/Icon'
 import { JapaneseWord } from './components/JapaneseWord'
-import { speakJapaneseText, speakSequence } from './lib/speech'
+import { compressImageDataUrl } from './lib/image'
+import { checkJapaneseVoice, speakJapaneseText, speakSequence } from './lib/speech'
 import { saveConversationExchanges, saveLessonHistory, saveVocabularyItems, type ConversationExchange, type Lesson, type VocabularyItem } from './lib/studyStore'
 import { recordLesson } from './lib/progressStore'
 
@@ -120,6 +121,8 @@ export default function Home() {
   const [studyImageColumnHeight, setStudyImageColumnHeight] = useState<number | null>(null)
   const [isPortrait, setIsPortrait] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [voiceMissing, setVoiceMissing] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const previewUrlRef = useRef('')
   const studyImageColumnRef = useRef<HTMLDivElement | null>(null)
   const vocabListRef = useRef<HTMLDivElement | null>(null)
@@ -131,6 +134,25 @@ export default function Home() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  useEffect(() => {
+    if (window.localStorage.getItem('japanese-study-guide:voice-notice-dismissed')) return
+    checkJapaneseVoice(available => setVoiceMissing(!available))
+  }, [])
+
+  useEffect(() => {
+    setShowOnboarding(!window.localStorage.getItem('japanese-study-guide:onboarding-dismissed'))
+  }, [])
+
+  const dismissVoiceNotice = () => {
+    window.localStorage.setItem('japanese-study-guide:voice-notice-dismissed', '1')
+    setVoiceMissing(false)
+  }
+
+  const dismissOnboarding = () => {
+    window.localStorage.setItem('japanese-study-guide:onboarding-dismissed', '1')
+    setShowOnboarding(false)
+  }
 
   useEffect(() => {
     let active = true
@@ -387,7 +409,8 @@ export default function Home() {
       setSelectedVocabKeys(data.lesson?.vocabulary.map(getVocabKey) || [])
       setRawText(data.rawText || '')
       if (data.lesson) {
-        saveLessonHistory(data.lesson, imageDataUrl)
+        const savedLesson = data.lesson
+        compressImageDataUrl(imageDataUrl).then(thumbnail => saveLessonHistory(savedLesson, thumbnail))
         recordLesson()
       }
       writeImageLessonDraft({
@@ -560,6 +583,40 @@ export default function Home() {
           <p className="dictionary-part intro-hide-mobile">noun</p>
           <p className="dictionary-definition">Learning Japanese by connecting words to the world you see.</p>
         </div>
+
+        {showOnboarding && (
+          <div className="onboarding-strip" role="note">
+            <div className="onboarding-steps">
+              <div className="onboarding-step">
+                <span className="onboarding-step-number">1</span>
+                <span>Snap or upload a photo of anything around you</span>
+              </div>
+              <div className="onboarding-step">
+                <span className="onboarding-step-number">2</span>
+                <span>Get Japanese words for what&apos;s in the picture</span>
+              </div>
+              <div className="onboarding-step">
+                <span className="onboarding-step-number">3</span>
+                <span>Practice with conversations and flashcards</span>
+              </div>
+            </div>
+            <button className="onboarding-dismiss" type="button" onClick={dismissOnboarding} aria-label="Dismiss guide">
+              Got it
+            </button>
+          </div>
+        )}
+
+        {voiceMissing && (
+          <div className="voice-notice" role="alert">
+            <span>
+              Your browser doesn&apos;t have a Japanese voice installed, so audio playback may not work.
+              On Android, install &quot;Speech Services by Google&quot; and add Japanese in text-to-speech settings.
+            </span>
+            <button className="onboarding-dismiss" type="button" onClick={dismissVoiceNotice} aria-label="Dismiss notice">
+              Dismiss
+            </button>
+          </div>
+        )}
 
         <div className="lesson-stack">
           <section className="panel study-panel" aria-label="Image upload and vocabulary">

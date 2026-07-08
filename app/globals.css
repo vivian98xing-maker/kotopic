@@ -1672,9 +1672,30 @@ rt {
   line-height: 1;
 }
 
+/* Invisible extended touch target (44px total) without changing the visual size */
+.image-label-dot::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+}
+
 .image-label-dot:hover {
   background: var(--accent-dark);
   transform: translate(-50%, -50%) scale(1.15);
+}
+
+.image-label-dot:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.quiz-result-text {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .portrait-legend {
@@ -1757,6 +1778,140 @@ rt {
 .hamburger-bar.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .hamburger-bar.open:nth-child(2) { opacity: 0; }
 .hamburger-bar.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ─── Nav due badge ───────────────────────────────────────────── */
+
+.nav-due-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #b0533a;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* ─── Vocab flag & practice hints ─────────────────────────────── */
+
+.flag-active {
+  color: #b0533a;
+  font-weight: 700;
+}
+
+.practice-keyboard-hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .practice-keyboard-hint {
+    display: none;
+  }
+}
+
+/* ─── Onboarding & notices ────────────────────────────────────── */
+
+.onboarding-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  border: 1px solid rgba(53, 105, 151, 0.25);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  background: rgba(53, 105, 151, 0.06);
+}
+
+.onboarding-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.onboarding-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.onboarding-step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.onboarding-dismiss {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: var(--panel-strong);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.voice-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border: 1px solid rgba(200, 130, 60, 0.4);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  background: rgba(240, 190, 120, 0.14);
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.voice-notice span {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* ─── Backup panel ────────────────────────────────────────────── */
+
+.backup-panel {
+  padding: 22px;
+  display: grid;
+  gap: 12px;
+}
+
+.backup-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 /* ─── Vocab filter row ────────────────────────────────────────── */
 

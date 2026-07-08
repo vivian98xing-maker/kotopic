@@ -66,6 +66,7 @@ export type LessonHistoryEntry = {
 const vocabularyStorageKey = 'japanese-study-guide:vocabulary'
 const conversationStorageKey = 'japanese-study-guide:conversations'
 const lessonHistoryStorageKey = 'japanese-study-guide:lesson-history'
+const flaggedStorageKey = 'japanese-study-guide:flagged-vocabulary'
 export const vocabularyUnitSize = 20
 
 export function getVocabularyKey(item: Pick<VocabularyItem, 'english' | 'japanese'>) {
@@ -153,6 +154,40 @@ export function toggleVocabularyLearned(id: string) {
   return nextItems
 }
 
+export type FlaggedVocabularyEntry = {
+  id: string
+  english: string
+  japanese: string
+  reading: string
+  flaggedAt: string
+}
+
+export function getFlaggedVocabulary() {
+  return readStorage<FlaggedVocabularyEntry[]>(flaggedStorageKey, [])
+}
+
+export function isVocabularyFlagged(id: string, flagged = getFlaggedVocabulary()) {
+  return flagged.some(entry => entry.id === id)
+}
+
+export function toggleVocabularyFlag(item: Pick<SavedVocabularyItem, 'id' | 'english' | 'japanese' | 'reading'>) {
+  const flagged = getFlaggedVocabulary()
+  const next = isVocabularyFlagged(item.id, flagged)
+    ? flagged.filter(entry => entry.id !== item.id)
+    : [
+        ...flagged,
+        {
+          id: item.id,
+          english: item.english,
+          japanese: item.japanese,
+          reading: item.reading,
+          flaggedAt: new Date().toISOString(),
+        },
+      ]
+  writeStorage(flaggedStorageKey, next)
+  return next
+}
+
 export function getSavedConversations() {
   return readStorage<SavedConversationExchange[]>(conversationStorageKey, [])
 }
@@ -216,7 +251,23 @@ function readStorage<T>(key: string, fallback: T): T {
 
 function writeStorage<T>(key: string, value: T) {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(key, JSON.stringify(value))
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    // Storage full: drop the oldest half of lesson history (largest data) and retry once
+    try {
+      const history = readStorage<LessonHistoryEntry[]>(lessonHistoryStorageKey, [])
+      if (history.length > 0) {
+        window.localStorage.setItem(
+          lessonHistoryStorageKey,
+          JSON.stringify(history.slice(0, Math.ceil(history.length / 2))),
+        )
+        window.localStorage.setItem(key, JSON.stringify(value))
+      }
+    } catch {
+      // Give up silently; data stays in memory for this session
+    }
+  }
 }
 
 function slugify(value: string) {

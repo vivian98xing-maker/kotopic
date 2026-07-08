@@ -46,12 +46,67 @@ type Lesson = {
 
 const jsonHeaders = { 'Content-Type': 'application/json' }
 
+// In-memory per-IP rate limit. Resets when the serverless instance recycles,
+// which is acceptable — this is a guard against runaway usage, not a security boundary.
+const rateWindowMs = 10 * 60 * 1000
+const rateMaxRequests = 12
+const requestLog = new Map<string, number[]>()
+
+function isRateLimited(ip: string) {
+  const now = Date.now()
+  const timestamps = (requestLog.get(ip) || []).filter(time => now - time < rateWindowMs)
+  if (timestamps.length >= rateMaxRequests) {
+    requestLog.set(ip, timestamps)
+    return true
+  }
+  timestamps.push(now)
+  requestLog.set(ip, timestamps)
+  if (requestLog.size > 5000) requestLog.clear()
+  return false
+}
+
+function friendlyErrorMessage(err: unknown): { message: string; status: number } {
+  const raw = err instanceof Error ? err.message : String(err)
+  const lower = raw.toLowerCase()
+
+  if (
+    lower.includes('quota') ||
+    lower.includes('arrearage') ||
+    lower.includes('insufficient') ||
+    lower.includes('exceeded') ||
+    lower.includes('429')
+  ) {
+    return {
+      message: 'The lesson generator has reached its daily limit. Please try again tomorrow — your saved words and progress are safe.',
+      status: 503,
+    }
+  }
+
+  if (lower.includes('timeout') || lower.includes('timed out')) {
+    return { message: 'The image took too long to analyze. Please try again with a smaller photo.', status: 504 }
+  }
+
+  return { message: raw, status: 500 }
+}
+
 export async function GET() {
   return Response.json({ status: 'ok' })
 }
 
 export async function POST(request: Request) {
   try {
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown'
+
+    if (isRateLimited(ip)) {
+      return Response.json(
+        { error: 'You are generating lessons very quickly! Please wait a few minutes and try again.' },
+        { status: 429 },
+      )
+    }
+
     const {
       imageDataUrl,
       localItems = [],
@@ -241,8 +296,8 @@ Rules:
 
     return Response.json({ lesson, rawText: text })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    return Response.json({ error: message }, { status: 500 })
+    const { message, status } = friendlyErrorMessage(err)
+    return Response.json({ error: message }, { status })
   }
 }
 

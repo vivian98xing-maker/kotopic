@@ -7,9 +7,12 @@ import { JapaneseWord } from '../../components/JapaneseWord'
 import { speakJapaneseText } from '../../lib/speech'
 import { recordReview } from '../../lib/progressStore'
 import {
+  getFlaggedVocabulary,
   getSavedVocabulary,
   getVocabularyUnits,
+  isVocabularyFlagged,
   removeSavedVocabulary,
+  toggleVocabularyFlag,
   toggleVocabularyLearned,
   updateVocabularyReview,
   vocabularyUnitSize,
@@ -33,6 +36,16 @@ export default function VocabularyUnitPage() {
   const [sessionResult, setSessionResult] = useState<'correct' | 'incorrect' | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'due' | 'learned'>('all')
+  const [flaggedIds, setFlaggedIds] = useState<string[]>([])
+
+  useEffect(() => {
+    setFlaggedIds(getFlaggedVocabulary().map(entry => entry.id))
+  }, [])
+
+  const handleToggleFlag = (item: SavedVocabularyItem) => {
+    toggleVocabularyFlag(item)
+    setFlaggedIds(getFlaggedVocabulary().map(entry => entry.id))
+  }
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -109,6 +122,28 @@ export default function VocabularyUnitPage() {
     setShowAnswer(false)
     setSessionResult(null)
   }
+
+  useEffect(() => {
+    if (mode !== 'practice') return
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault()
+        setShowAnswer(true)
+      } else if (showAnswer && (event.key === '1' || event.key === 'ArrowLeft')) {
+        handleReview(false)
+      } else if (showAnswer && (event.key === '2' || event.key === 'ArrowRight')) {
+        handleReview(true)
+      } else if (event.key === 's') {
+        handleNextCard()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, showAnswer, currentCard])
 
   return (
     <main className="app-shell">
@@ -218,6 +253,15 @@ export default function VocabularyUnitPage() {
                       >
                         {item.learned ? 'Learned ✓' : 'Mark learned'}
                       </button>
+                      <button
+                        className={`text-button${flaggedIds.includes(item.id) ? ' flag-active' : ''}`}
+                        type="button"
+                        onClick={() => handleToggleFlag(item)}
+                        aria-pressed={flaggedIds.includes(item.id)}
+                        title="Flag this word if the reading or translation looks wrong"
+                      >
+                        {flaggedIds.includes(item.id) ? 'Flagged ⚑' : 'Report incorrect'}
+                      </button>
                       <button className="text-button" type="button" onClick={() => handleRemove(item.id)}>
                         Remove
                       </button>
@@ -248,6 +292,9 @@ export default function VocabularyUnitPage() {
                     <span className="due-badge">Due now</span>
                   )}
                 </div>
+                <p className="quiz-result-text" role="status" aria-live="polite">
+                  {sessionResult === 'correct' ? '✓ Correct!' : sessionResult === 'incorrect' ? '✗ Wrong — you\'ll see it again soon' : ' '}
+                </p>
                 <div className="practice-prompt">
                   <p>
                     {currentCard && <JapaneseWord item={currentCard} />}
@@ -291,6 +338,9 @@ export default function VocabularyUnitPage() {
                     Skip
                   </button>
                 </div>
+                <p className="practice-keyboard-hint">
+                  Keyboard: Space to reveal · ← wrong · → right · S to skip
+                </p>
               </section>
             )}
           </>

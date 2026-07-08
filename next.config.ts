@@ -8,6 +8,11 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   disable: process.env.NODE_ENV === "development",
 });
 
-const nextConfig: NextConfig = {};
+// Empty turbopack config lets `next dev` (Turbopack) coexist with the PWA
+// plugin's webpack config; production builds use --webpack so the service
+// worker is generated.
+const nextConfig: NextConfig = {
+  turbopack: {},
+};
 
 module.exports = withPWA(nextConfig);

@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getSavedVocabulary } from '../lib/studyStore'
 
 const links = [
   { href: '/', label: 'Lesson' },
@@ -16,6 +17,17 @@ const links = [
 export function AppNav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [dueCount, setDueCount] = useState(0)
+
+  useEffect(() => {
+    const now = new Date()
+    const due = getSavedVocabulary().filter(item => {
+      if (item.learned) return false
+      if (!item.nextReviewAt) return true
+      return new Date(item.nextReviewAt) <= now
+    }).length
+    setDueCount(due)
+  }, [pathname])
 
   return (
     <nav className="app-nav" aria-label="Main navigation">
@@ -44,6 +56,11 @@ export function AppNav() {
             onClick={() => setMenuOpen(false)}
           >
             {link.label}
+            {link.href === '/vocabulary' && dueCount > 0 && (
+              <span className="nav-due-badge" aria-label={`${dueCount} words due for review`}>
+                {dueCount > 99 ? '99+' : dueCount}
+              </span>
+            )}
           </Link>
         ))}
       </div>

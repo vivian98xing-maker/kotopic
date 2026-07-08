@@ -224,6 +224,9 @@ export default function KanaPage() {
               <p className="section-kicker">
                 Card {(quizIndex % quizQueue.length) + 1} of {quizQueue.length}
               </p>
+              <p className="quiz-result-text" role="status" aria-live="polite">
+                {lastResult === 'correct' ? '✓ Correct!' : lastResult === 'incorrect' ? '✗ Wrong — keep going!' : ' '}
+              </p>
               <div className="practice-prompt kana-prompt">
                 <p className={quizMode === 'kana-to-romaji' ? 'kana-question-char' : 'kana-question-romaji'}>
                   {question}

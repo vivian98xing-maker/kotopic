@@ -1,13 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { exportStudyData, importStudyData } from '../lib/backup'
 import { getAllTimeTotals, getStreak, getTodayStats, getWeekDayLabels, getWeeklyStats } from '../lib/progressStore'
 import { getSavedVocabulary } from '../lib/studyStore'
 
 export default function ProgressPage() {
   const [mounted, setMounted] = useState(false)
+  const [backupMessage, setBackupMessage] = useState('')
+  const importInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => { setMounted(true) }, [])
+
+  const handleImport = async (file: File | undefined) => {
+    if (!file) return
+    const result = await importStudyData(file)
+    setBackupMessage(result.message)
+    if (result.ok) {
+      setTimeout(() => window.location.reload(), 1200)
+    }
+  }
 
   if (!mounted) return null
 
@@ -90,6 +102,34 @@ export default function ProgressPage() {
             <p className="progress-stat-label">Correct answers</p>
             <p className="progress-alltime-value">{allTime.wordsLearned}</p>
           </div>
+        </div>
+
+        <div className="panel backup-panel">
+          <h2 className="progress-chart-title">Backup your data</h2>
+          <p className="backup-note">
+            All progress is stored on this device only. Download a backup before clearing your browser
+            or switching phones, and restore it here on the new device.
+          </p>
+          <div className="backup-actions">
+            <button className="secondary-button" type="button" onClick={exportStudyData}>
+              Download backup
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => importInputRef.current?.click()}
+            >
+              Restore from backup
+            </button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json"
+              style={{ display: 'none' }}
+              onChange={event => handleImport(event.target.files?.[0])}
+            />
+          </div>
+          {backupMessage && <p className="save-message">{backupMessage}</p>}
         </div>
       </section>
     </main>
